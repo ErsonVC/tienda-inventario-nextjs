@@ -1,5 +1,32 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { enviarAlertaStockBajo } from '@/lib/mail';
+
+export async function GET() {
+  try {
+    const ventas = await prisma.ventas.findMany({
+      include: {
+        detalles_venta: {
+          include: {
+            productos: {
+              select: {
+                nombre: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        fecha: 'desc'
+      },
+      take: 50
+    });
+    return NextResponse.json(ventas);
+  } catch (error) {
+    console.error("Error fetching ventas:", error);
+    return NextResponse.json({ error: "Failed to fetch ventas" }, { status: 500 });
+  }
+}
 
 export async function POST(req: Request) {
   const body = await req.json();
@@ -24,9 +51,9 @@ export async function POST(req: Request) {
         }
       });
 
-      // Actualizar stock
+      // Actualizar stock y verificar alertas
       for (const d of detalles) {
-        await tx.productos.update({
+        const updatedProducto = await tx.productos.update({
           where: { id: BigInt(d.productoId) },
           data: {
             stock_actual: {
@@ -34,6 +61,11 @@ export async function POST(req: Request) {
             }
           }
         });
+
+        // Si el stock cae por debajo del mínimo, enviar alerta (fuera de la transacción para no bloquear)
+        if (Number(updatedProducto.stock_actual) <= Number(updatedProducto.stock_minimo)) {
+          enviarAlertaStockBajo(updatedProducto.nombre, Number(updatedProducto.stock_actual), Number(updatedProducto.stock_minimo));
+        }
       }
 
       return venta;

@@ -10,8 +10,9 @@ export async function GET() {
   // Convert fields for frontend compatibility (camelCase)
   const formatted = bajoStock.map(p => ({
     ...p,
-    stockActual: p.stock_actual,
-    stockMinimo: p.stock_minimo,
+    precio: Number(p.precio),
+    stockActual: Number(p.stock_actual),
+    stockMinimo: Number(p.stock_minimo),
     tipoVenta: p.tipo_venta,
   }));
   

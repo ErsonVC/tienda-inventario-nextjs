@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { enviarAlertaStockBajo } from '@/lib/mail';
 
 export async function POST(req: Request) {
   const body = await req.json();
@@ -10,8 +11,26 @@ export async function POST(req: Request) {
       stock_actual: body.stockActual,
       stock_minimo: body.stockMinimo,
       tipo_venta: body.tipoVenta,
-      categoria_id: BigInt(body.categoria.id)
+      categoria_id: BigInt(body.categoriaId)
+    },
+    include: {
+      categorias: true
     }
   });
-  return NextResponse.json(producto);
+
+  if (Number(producto.stock_actual) <= Number(producto.stock_minimo)) {
+    enviarAlertaStockBajo(producto.nombre, Number(producto.stock_actual), Number(producto.stock_minimo));
+  }
+  
+  const response = {
+    id: producto.id,
+    nombre: producto.nombre,
+    precio: Number(producto.precio),
+    stockActual: Number(producto.stock_actual),
+    stockMinimo: Number(producto.stock_minimo),
+    tipoVenta: producto.tipo_venta,
+    categoria: { id: producto.categorias.id, nombre: producto.categorias.nombre }
+  };
+  
+  return NextResponse.json(response);
 }

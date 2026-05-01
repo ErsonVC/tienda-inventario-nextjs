@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Mi Tienda",
-  description: "Sistema de Inventario",
+  title: "JOY - Sistema de Inventario",
+  description: "Sistema de Inventario y Punto de Venta",
 };
 
 export default function RootLayout({

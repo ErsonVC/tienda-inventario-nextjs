@@ -13,9 +13,8 @@ function Navbar() {
 
   useEffect(() => {
     cargarAlertas();
-  }, []);
+  }, [pathname]);
 
-  // Cerrar menú al cambiar de ruta
   useEffect(() => {
     setMenuAbierto(false);
   }, [pathname]);
@@ -36,69 +35,67 @@ function Navbar() {
     setMostrarAlertas(!mostrarAlertas);
   };
 
+  const NavLink = ({ href, children, emoji }) => {
+    const active = pathname === href;
+    return (
+      <Link 
+        href={href} 
+        className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition-all no-underline ${
+          active 
+            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' 
+            : 'text-gray-400 hover:text-white hover:bg-white/5'
+        }`}
+      >
+        <span className="text-sm">{emoji}</span>
+        <span className="text-sm">{children}</span>
+      </Link>
+    );
+  };
+
   return (
-    <nav className="bg-[#1e1e2e] text-white relative shadow-xl z-50">
-      <div className="flex items-center justify-between py-4 px-4 sm:px-8 max-w-7xl mx-auto">
-        <div className="flex items-center gap-3">
-          {/* Botón Hamburguesa (solo móvil) */}
-          <button 
-            className="sm:hidden p-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-800 transition-colors"
-            onClick={() => setMenuAbierto(!menuAbierto)}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {menuAbierto ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
-          
-          <Link href="/" className="flex items-center gap-2 no-underline text-white">
-            <span className="text-2xl">🛒</span>
-            <h2 className="text-xl font-bold m-0 hidden sm:block">Mi Tienda</h2>
+    <nav className="bg-[#0f172a] text-white sticky top-0 z-50 border-b border-white/5 backdrop-blur-md bg-opacity-90">
+      <div className="flex items-center justify-between py-4 px-4 sm:px-8 max-w-[1600px] mx-auto">
+        <div className="flex items-center gap-8">
+          <Link href="/dashboard" className="flex items-center gap-3 no-underline text-white group">
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-xl shadow-lg group-hover:scale-110 transition-transform">🛒</div>
+            <h2 className="text-xl font-black m-0 tracking-tighter hidden lg:block">JOY</h2>
           </Link>
+          
+          {/* Escritorio */}
+          <div className="hidden md:flex items-center gap-1">
+            <NavLink href="/dashboard" emoji="📊">Dashboard</NavLink>
+            <NavLink href="/productos" emoji="📦">Productos</NavLink>
+            <NavLink href="/categorias" emoji="📁">Categorías</NavLink>
+            <NavLink href="/ventas" emoji="💰">Ventas</NavLink>
+            <NavLink href="/proveedores" emoji="🚚">Proveedores</NavLink>
+          </div>
         </div>
 
-        <div className="flex items-center gap-6">
-          {/* Enlaces de Escritorio */}
-          <div className="hidden sm:flex items-center gap-6">
-            <Link href="/dashboard" className="text-gray-300 hover:text-purple-400 font-semibold transition-colors">
-              Inicio
-            </Link>
-            <Link href="/categorias" className="text-gray-300 hover:text-purple-400 font-semibold transition-colors">
-              Categorías
-            </Link>
-            <Link href="/productos" className="text-gray-300 hover:text-purple-400 font-semibold transition-colors">
-              Productos
-            </Link>
-          </div>
-
-          {/* Campana de notificaciones */}
-          <div className="relative cursor-pointer text-2xl p-2" onClick={toggleAlertas}>
-            🔔
+        <div className="flex items-center gap-4">
+          {/* Campana */}
+          <div className="relative cursor-pointer w-10 h-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors" onClick={toggleAlertas}>
+            <span className="text-xl">🔔</span>
             {bajoStock.length > 0 && (
-              <span className="absolute top-1 right-1 bg-red-500 text-white rounded-full text-[10px] w-5 h-5 flex items-center justify-center font-bold animate-pulse shadow-md border border-[#1e1e2e]">
-                {bajoStock.length}
-              </span>
+              <span className="absolute top-2 right-2 bg-rose-500 w-2 h-2 rounded-full animate-ping"></span>
             )}
 
-            {/* Dropdown de alertas */}
+            {/* Dropdown Alertas */}
             {mostrarAlertas && (
-              <div className="absolute top-12 right-0 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl p-4 min-w-[300px] shadow-2xl z-[999] border border-gray-200 dark:border-gray-700">
-                <strong className="block mb-3 text-red-600 dark:text-red-400 flex items-center gap-2">
-                  <span>⚠️</span> Stock bajo
-                </strong>
-                <div className="max-h-60 overflow-y-auto pr-1">
+              <div className="absolute top-12 right-0 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-3xl p-6 min-w-[320px] shadow-2xl border border-gray-100 dark:border-gray-800 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="font-black text-rose-500 uppercase text-xs tracking-widest">Alertas de Stock</h4>
+                  <span className="px-2 py-0.5 bg-rose-50 text-rose-600 rounded text-[10px] font-bold">{bajoStock.length} PRODUCTOS</span>
+                </div>
+                <div className="space-y-3 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
                   {bajoStock.length === 0 ? (
-                    <p className="text-emerald-600 dark:text-emerald-400 text-sm text-center py-2 font-medium">Todo en orden ✅</p>
+                    <p className="text-center py-10 text-gray-400 text-sm italic">Todo bajo control ✨</p>
                   ) : (
                     bajoStock.map((p) => (
-                      <div key={p.id} className="flex justify-between items-center gap-3 py-2.5 border-b border-gray-100 dark:border-gray-700 last:border-0">
-                        <span className="font-medium text-sm truncate max-w-[150px]" title={p.nombre}>{p.nombre}</span>
-                        <span className="text-red-500 font-bold text-sm bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded-md">
-                          {p.stockActual} / {p.stockMinimo} <span className="text-[10px] text-gray-500 dark:text-gray-400 font-normal uppercase">{p.tipoVenta === 'GRANEL' ? 'kg' : 'un'}</span>
-                        </span>
+                      <div key={p.id} className="flex flex-col p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50">
+                        <div className="flex justify-between items-center">
+                          <span className="font-bold text-sm truncate">{p.nombre}</span>
+                          <span className="text-rose-500 font-black text-xs">{p.stockActual} <span className="text-[10px] font-normal opacity-60">uds</span></span>
+                        </div>
                       </div>
                     ))
                   )}
@@ -106,29 +103,26 @@ function Navbar() {
               </div>
             )}
           </div>
+
+          <button 
+            className="md:hidden p-2 text-gray-400 hover:text-white transition-colors"
+            onClick={() => setMenuAbierto(!menuAbierto)}
+          >
+            <span className="text-2xl">{menuAbierto ? '✕' : '☰'}</span>
+          </button>
         </div>
       </div>
 
-      {/* Menú Móvil */}
-      <div className={`sm:hidden absolute top-full left-0 w-full bg-[#1e1e2e] border-t border-gray-800 transition-all duration-300 ease-in-out ${menuAbierto ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}>
-        <div className="flex flex-col p-4 gap-2 shadow-2xl">
-          <Link href="/dashboard" className="p-4 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 font-bold text-lg flex items-center gap-3">
-            <span>📊</span> Dashboard
-          </Link>
-          <Link href="/categorias" className="p-4 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 font-bold text-lg flex items-center gap-3">
-            <span>📁</span> Categorías
-          </Link>
-          <Link href="/productos" className="p-4 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 font-bold text-lg flex items-center gap-3">
-            <span>📦</span> Productos
-          </Link>
-          <Link href="/proveedores" className="p-4 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 font-bold text-lg flex items-center gap-3">
-            <span>🚚</span> Proveedores
-          </Link>
-          <Link href="/ventas" className="p-4 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 font-bold text-lg flex items-center gap-3">
-            <span>💰</span> Ventas
-          </Link>
+      {/* Móvil */}
+      {menuAbierto && (
+        <div className="md:hidden border-t border-white/5 bg-[#0f172a] p-4 flex flex-col gap-2 animate-in slide-in-from-top duration-300">
+          <NavLink href="/dashboard" emoji="📊">Dashboard</NavLink>
+          <NavLink href="/productos" emoji="📦">Productos</NavLink>
+          <NavLink href="/categorias" emoji="📁">Categorías</NavLink>
+          <NavLink href="/ventas" emoji="💰">Ventas</NavLink>
+          <NavLink href="/proveedores" emoji="🚚">Proveedores</NavLink>
         </div>
-      </div>
+      )}
     </nav>
   );
 }
