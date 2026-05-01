@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model categorias {
+  id        BigInt      @id @default(autoincrement())
+  nombre    String      @unique(map: "ukqcog8b7hps1hioi9onqwjdt6y") @db.VarChar(255)
+  productos productos[]
+}
+
+model compras {
+  id              BigInt            @id @default(autoincrement())
+  fecha           DateTime          @db.Timestamp(6)
+  total           Decimal           @db.Decimal(10, 2)
+  proveedor_id    BigInt
+  proveedores     proveedores       @relation(fields: [proveedor_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fkabfd3b61ss0f7ebhao6evn5ec")
+  detalles_compra detalles_compra[]
+}
+
+model detalles_compra {
+  id              BigInt    @id @default(autoincrement())
+  cantidad        Decimal   @db.Decimal(10, 2)
+  precio_unitario Decimal   @db.Decimal(10, 2)
+  compra_id       BigInt
+  producto_id     BigInt
+  productos       productos @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk6hhffw4ufmio31wny56w7wfk6")
+  compras         compras   @relation(fields: [compra_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fkhmao5favsu254hqpg7bv17jil")
+}
+
+model detalles_venta {
+  id              BigInt    @id @default(autoincrement())
+  cantidad        Decimal   @db.Decimal(10, 2)
+  precio_unitario Decimal   @db.Decimal(10, 2)
+  producto_id     BigInt
+  venta_id        BigInt
+  ventas          ventas    @relation(fields: [venta_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk453xcyfk9n6snv6qnjlo0p65p")
+  productos       productos @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk7mddblufrocsknhbs4kjtlx94")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model productos {
+  id              BigInt            @id @default(autoincrement())
+  nombre          String            @db.VarChar(255)
+  precio          Decimal           @db.Decimal(38, 2)
+  stock_actual    Decimal           @db.Decimal(38, 2)
+  stock_minimo    Decimal           @db.Decimal(38, 2)
+  tipo_venta      String            @db.VarChar(255)
+  categoria_id    BigInt
+  detalles_compra detalles_compra[]
+  detalles_venta  detalles_venta[]
+  categorias      categorias        @relation(fields: [categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk2fwq10nwymfv7fumctxt9vpgb")
+}
+
+model proveedores {
+  id        BigInt    @id @default(autoincrement())
+  direccion String?   @db.VarChar(255)
+  email     String?   @db.VarChar(255)
+  nombre    String    @db.VarChar(255)
+  telefono  String?   @db.VarChar(255)
+  compras   compras[]
+}
+
+model ventas {
+  id             BigInt           @id @default(autoincrement())
+  fecha          DateTime         @db.Timestamp(6)
+  total          Decimal          @db.Decimal(10, 2)
+  detalles_venta detalles_venta[]
+}
